@@ -1,0 +1,18 @@
+# Security policy and threat model
+
+SentinelDesk analyses logs that may be **written by attackers**, so we treat every log line as hostile input.
+
+| Threat | Mitigation |
+| --- | --- |
+| Prompt injection via log content (e.g. a User-Agent saying "ignore previous instructions") | Raw lines reach Gemini only through tools, under an `untrusted_log_lines` key, truncated to 240 chars. The system instruction forbids following embedded instructions. A dedicated detector flags such lines (MITRE ATLAS AML.T0051). The model's output is validated, so it cannot change scores or invent incidents. |
+| LLM recommends a dangerous or made-up action | The model can only choose action IDs from a fixed playbook (zod enum). Each target must belong to the incident. Invalid submissions are rejected and the model must correct them. |
+| Command injection through suggested remediation | Commands are generated from templates. Targets are inserted only if they pass strict IPv4/IPv6/POSIX-username validation; otherwise the action is dropped. |
+| Automatic destructive actions | None exist. SentinelDesk never executes commands. High-risk actions need two clicks, and every decision is recorded in an exportable audit trail. |
+| XSS from log content in the UI | The client builds the DOM with `textContent` only (no `innerHTML`), and a strict CSP is applied (`script-src 'self'`, no inline script or style). |
+| API key exposure | The key is read from the server environment only and never sent to the browser or logged. `.env` is git-ignored. For production, use Secret Manager. |
+| Abuse / denial of wallet | Per-IP rate limit, 256 KB / 5,000-line caps, bounded agent (6 turns, 20 s per call, 50 s total), response cache. |
+| CSRF / cross-site use of the API | Same-origin check on all `/api` routes; `no-store` caching. |
+| Information leakage | Generic error messages with request IDs; details only in structured server logs. User log text is never logged. |
+| Container compromise | Multi-stage build, production dependencies only, runs as the non-root `node` user. |
+
+Report vulnerabilities by opening a private security advisory on this repository.
