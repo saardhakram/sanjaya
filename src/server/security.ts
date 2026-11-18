@@ -1,28 +1,35 @@
 import type { NextFunction, Request, Response } from 'express';
-import helmet from 'helmet';
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' data:",
+  "connect-src 'self'",
+  "font-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  'upgrade-insecure-requests',
+].join('; ');
+
+const HEADERS: Readonly<Record<string, string>> = {
+  'Content-Security-Policy': CSP,
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin',
+  'Referrer-Policy': 'no-referrer',
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-DNS-Prefetch-Control': 'off',
+  'Origin-Agent-Cluster': '?1',
+};
 
 /** Strict security headers: no inline script or style, no framing, no third-party origins. */
-export const securityHeaders = helmet({
-  contentSecurityPolicy: {
-    useDefaults: false,
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'"],
-      imgSrc: ["'self'", 'data:'],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
-      frameAncestors: ["'none'"],
-      upgradeInsecureRequests: [],
-    },
-  },
-  crossOriginOpenerPolicy: { policy: 'same-origin' },
-  referrerPolicy: { policy: 'no-referrer' },
-  strictTransportSecurity: { maxAge: 63_072_000, includeSubDomains: true },
-});
+export function securityHeaders(_req: Request, res: Response, next: NextFunction): void {
+  for (const [name, value] of Object.entries(HEADERS)) res.setHeader(name, value);
+  next();
+}
 
 export function permissionsPolicy(_req: Request, res: Response, next: NextFunction): void {
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');

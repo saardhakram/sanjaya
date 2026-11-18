@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import { z } from 'zod';
 import type { Config } from './config.js';
@@ -8,8 +7,8 @@ import { log } from './logger.js';
 import { permissionsPolicy, rateLimiter, sameOrigin, securityHeaders } from './security.js';
 import type { AnalysisService } from './service.js';
 
-const here = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_PUBLIC_DIR = path.resolve(here, '../public');
+// Built static assets (see scripts/build-client.mjs); the process runs from the project root.
+const DEFAULT_PUBLIC_DIR = path.resolve(process.cwd(), 'dist/public');
 
 export interface AppOptions {
   config: Config;
