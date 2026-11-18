@@ -38,7 +38,7 @@ describe('loadConfig', () => {
     const c = loadConfig({ PORT: 'abc', GEMINI_API_KEY: '  ' });
     expect(c.port).toBe(8080);
     expect(c.geminiApiKey).toBeUndefined();
-    expect(c.models).toEqual(['gemini-3.5-flash', 'gemini-3.1-flash-lite']);
+    expect(c.models).toEqual(['gemini-3.1-flash-lite', 'gemini-3.5-flash']);
   });
 
   it('reads overrides and dedupes models', () => {

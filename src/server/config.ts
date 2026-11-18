@@ -23,8 +23,8 @@ function text(value: string | undefined): string | undefined {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
-  const primary = text(env.GEMINI_MODEL) ?? 'gemini-3.5-flash';
-  const fallback = text(env.GEMINI_FALLBACK_MODEL) ?? 'gemini-3.1-flash-lite';
+  const primary = text(env.GEMINI_MODEL) ?? 'gemini-3.1-flash-lite';
+  const fallback = text(env.GEMINI_FALLBACK_MODEL) ?? 'gemini-3.5-flash';
   return {
     port: int(env.PORT, 8080),
     geminiApiKey: text(env.GEMINI_API_KEY),

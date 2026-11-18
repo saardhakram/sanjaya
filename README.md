@@ -5,7 +5,7 @@
 > **PromptWars × AgentX 2.0 · PS06: AI-Powered Cybersecurity Triage**
 > A defensive agent that analyses security logs, correlates alerts, detects suspicious activity and recommends safe remediation, with a human approving every step.
 
-**Live demo:** `https://<your-cloud-run-url>` · Click a demo scenario, then **Analyze logs**.
+**Live demo:** https://sanjaya-dun.vercel.app · Click a demo scenario, then **Analyze logs**.
 
 ---
 
@@ -54,8 +54,8 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow and [SECURITY
 
 ## Google services used
 
-- **Gemini API** (`@google/genai`): a function-calling agent with system instructions, forced tool use (`mode: ANY`), three tools, safety settings, token accounting and a primary → fallback model chain (`gemini-3.5-flash` → `gemini-3.1-flash-lite`, configurable). Full model turns are kept in history, so Gemini 3 thought signatures are preserved.
-- **Google Cloud Run**: containerised, non-root, `$PORT`, `/healthz`, graceful SIGTERM shutdown.
+- **Gemini API** (`@google/genai`): a function-calling agent with system instructions, forced tool use (`mode: ANY`), three tools, safety settings, token accounting and a primary → fallback model chain (`gemini-3.1-flash-lite` for speed, falling back to `gemini-3.5-flash`; configurable). In production this fallback already kept the analyst online when the primary model returned 503 "high demand". Full model turns are kept in history, so Gemini 3 thought signatures are preserved.
+- **Google Cloud Run ready**: containerised, non-root, `$PORT`, `/healthz`, graceful SIGTERM shutdown (the live demo runs on Vercel's Express runtime from the same code).
 - **Google Cloud Logging**: structured JSON logs (`severity`, request IDs, token usage, latency) that Cloud Run ingests automatically. User log text is never logged.
 
 ## Quality
@@ -63,7 +63,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow and [SECURITY
 | Area              | How                                                                                                                                                                                                                                                                                                                                                                                                   |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Testing**       | 76 Vitest tests, ~98% line coverage with CI-enforced thresholds. Parsers, every detector (positive and negative cases), correlation, playbook injection safety, the agent loop with a scripted fake Gemini (self-correction, unknown tools, turn and time budgets, model fallback), HTTP hardening, caching, rate limiting, report export. Plus an end-to-end smoke test against the built container. |
-| **Security**      | API key server-side only · strict CSP with no `unsafe-inline` (own header middleware, no extra dependency) · HSTS, nosniff, frame-ancestors none, COOP, Permissions-Policy · same-origin API · per-IP rate limit · body and line caps · zod validation · generic errors with request IDs · non-root container · Dependabot · `npm audit` clean.                                                                                                    |
+| **Security**      | API key server-side only · strict CSP with no `unsafe-inline` (own header middleware, no extra dependency) · HSTS, nosniff, frame-ancestors none, COOP, Permissions-Policy · same-origin API · per-IP rate limit · body and line caps · zod validation · generic errors with request IDs · non-root container · Dependabot · `npm audit` clean.                                                       |
 | **Efficiency**    | Deterministic pre-analysis means the model only sees compact incident summaries, not raw logs (about 3–6k tokens per run). Identical requests are served from a TTL/LRU cache with zero tokens. The agent is bounded by turns and time, tool calls are batched per turn, and the client bundle is ~19 KB with no framework.                                                                           |
 | **Accessibility** | Semantic landmarks, skip link, labelled controls, `aria-live` status, `role="alert"` errors, focus moved to results, `aria-pressed` toggles, keyboard-only operable, visible focus, severity shown as text as well as colour, light/dark themes, `prefers-reduced-motion`.                                                                                                                            |
 | **Code quality**  | TypeScript strict + `noUncheckedIndexedAccess`, type-aware ESLint, Prettier, small single-purpose modules, shared types between server and client.                                                                                                                                                                                                                                                    |

@@ -73,7 +73,7 @@ describe('POST /api/analyze', () => {
       .expect(200);
     expect(first.body.meta).toMatchObject({
       engine: 'gemini',
-      model: 'gemini-3.5-flash',
+      model: 'gemini-3.1-flash-lite',
       cached: false,
     });
     expect(first.body.triage.executiveSummary).toMatch(/brute-forced SSH/);
