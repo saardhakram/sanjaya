@@ -18,7 +18,7 @@
 
 ## Why this split
 
-LLMs are good at explanation and judgement, and bad at counting and following rules exactly when attackers control the input. SentinelDesk lets tested code produce every fact and gives the model a narrow, validated interface for the parts that need judgement.
+LLMs are good at explanation and judgement, and bad at counting and following rules exactly when attackers control the input. Sanjaya lets tested code produce every fact and gives the model a narrow, validated interface for the parts that need judgement.
 
 ## Front end
 

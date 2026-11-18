@@ -1,4 +1,6 @@
-# SentinelDesk: AI-powered cybersecurity triage
+# Sanjaya: divya drishti for your security logs
+
+> In the Mahabharata, Sanjaya was given _divya drishti_ (divine sight). He saw the entire Kurukshetra battlefield and narrated it, faithfully and without taking sides, to the blind king Dhritarashtra. This app does the same for your logs: it sees every line, reconstructs the attack, and explains it truthfully to the person who has to decide what to do.
 
 > **PromptWars × AgentX 2.0 · PS06: AI-Powered Cybersecurity Triage**
 > A defensive agent that analyses security logs, correlates alerts, detects suspicious activity and recommends safe remediation, with a human approving every step.
@@ -11,21 +13,21 @@
 
 Small teams get thousands of log lines and no SOC. Existing tools either drown them in raw alerts or hand the decision to a black-box AI that can hallucinate, be manipulated by attacker-controlled log text, or run destructive commands. Analysts need **fast, explainable triage they can trust and verify**.
 
-## What SentinelDesk does
+## What Sanjaya does
 
-| Step | What happens | Who decides |
-| --- | --- | --- |
-| **1. Detect** | Parses Linux auth, Apache/Nginx and UFW/iptables logs. Ten tested detectors flag brute force, password spraying, successful compromise, root shells, backdoor accounts, port scans, SQLi / traversal / command injection / XSS, scanners, enumeration and **prompt-injection text planted for AI tools**. | Deterministic code |
-| **2. Correlate** | Union-find links IPs ↔ accounts ↔ sudo activity, so *scan → brute force → login → root → backdoor* becomes **one multi-stage incident** with kill-chain stages in the order they happened, mapped to MITRE ATT&CK. | Deterministic code |
-| **3. Investigate** | A **Gemini function-calling agent** pulls evidence through tools, explains each incident in plain English, infers the attacker's objective, prioritises incidents, and picks responses **only from a fixed playbook**. | Gemini (validated) |
-| **4. Approve** | Every action shows its risk, reversibility and a template-generated command. The analyst approves or rejects each one (high-risk ones need a second confirmation). Approved steps export as a Markdown runbook with an audit trail. | **Human** |
+| Step               | What happens                                                                                                                                                                                                                                                                                              | Who decides        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ |
+| **1. Detect**      | Parses Linux auth, Apache/Nginx and UFW/iptables logs. Ten tested detectors flag brute force, password spraying, successful compromise, root shells, backdoor accounts, port scans, SQLi / traversal / command injection / XSS, scanners, enumeration and **prompt-injection text planted for AI tools**. | Deterministic code |
+| **2. Correlate**   | Union-find links IPs ↔ accounts ↔ sudo activity, so _scan → brute force → login → root → backdoor_ becomes **one multi-stage incident** with kill-chain stages in the order they happened, mapped to MITRE ATT&CK.                                                                                        | Deterministic code |
+| **3. Investigate** | A **Gemini function-calling agent** pulls evidence through tools, explains each incident in plain English, infers the attacker's objective, prioritises incidents, and picks responses **only from a fixed playbook**.                                                                                    | Gemini (validated) |
+| **4. Approve**     | Every action shows its risk, reversibility and a template-generated command. The analyst approves or rejects each one (high-risk ones need a second confirmation). Approved steps export as a Markdown runbook with an audit trail.                                                                       | **Human**          |
 
 ### Design principles
 
 - **Numbers come from code, never from the LLM.** Scores, severities, counts, IPs and timestamps are computed by tested detectors. The model adds narrative, priority and a choice of actions.
 - **The AI cannot write commands.** It picks an action ID from the playbook; commands come from templates, and targets are inserted only after strict IP/username validation. A malicious username like `x;rm -rf /` in a log can never reach a suggested command.
 - **Logs are untrusted.** Evidence is passed to Gemini under an `untrusted_log_lines` key, the system instruction forbids following instructions inside it, and a detector flags injection attempts (MITRE ATLAS `AML.T0051`).
-- **Human in the loop.** SentinelDesk never executes anything.
+- **Human in the loop.** Sanjaya never executes anything.
 - **Always answers.** With no API key, a model outage, or a time/turn budget hit, the rule-based triage still returns a complete report and says why.
 
 ## Architecture
@@ -58,13 +60,13 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the data flow and [SECURITY
 
 ## Quality
 
-| Area | How |
-| --- | --- |
-| **Testing** | 76 Vitest tests, ~98% line coverage with CI-enforced thresholds. Parsers, every detector (positive and negative cases), correlation, playbook injection safety, the agent loop with a scripted fake Gemini (self-correction, unknown tools, turn and time budgets, model fallback), HTTP hardening, caching, rate limiting, report export. Plus an end-to-end smoke test against the built container. |
-| **Security** | API key server-side only · strict CSP with no `unsafe-inline` · HSTS, nosniff, frame-ancestors none, COOP, Permissions-Policy · same-origin API · per-IP rate limit · body and line caps · zod validation · generic errors with request IDs · non-root container · Dependabot · `npm audit` clean. |
-| **Efficiency** | Deterministic pre-analysis means the model only sees compact incident summaries, not raw logs (about 3–6k tokens per run). Identical requests are served from a TTL/LRU cache with zero tokens. The agent is bounded by turns and time, tool calls are batched per turn, and the client bundle is ~19 KB with no framework. |
-| **Accessibility** | Semantic landmarks, skip link, labelled controls, `aria-live` status, `role="alert"` errors, focus moved to results, `aria-pressed` toggles, keyboard-only operable, visible focus, severity shown as text as well as colour, light/dark themes, `prefers-reduced-motion`. |
-| **Code quality** | TypeScript strict + `noUncheckedIndexedAccess`, type-aware ESLint, Prettier, small single-purpose modules, shared types between server and client. |
+| Area              | How                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Testing**       | 76 Vitest tests, ~98% line coverage with CI-enforced thresholds. Parsers, every detector (positive and negative cases), correlation, playbook injection safety, the agent loop with a scripted fake Gemini (self-correction, unknown tools, turn and time budgets, model fallback), HTTP hardening, caching, rate limiting, report export. Plus an end-to-end smoke test against the built container. |
+| **Security**      | API key server-side only · strict CSP with no `unsafe-inline` · HSTS, nosniff, frame-ancestors none, COOP, Permissions-Policy · same-origin API · per-IP rate limit · body and line caps · zod validation · generic errors with request IDs · non-root container · Dependabot · `npm audit` clean.                                                                                                    |
+| **Efficiency**    | Deterministic pre-analysis means the model only sees compact incident summaries, not raw logs (about 3–6k tokens per run). Identical requests are served from a TTL/LRU cache with zero tokens. The agent is bounded by turns and time, tool calls are batched per turn, and the client bundle is ~19 KB with no framework.                                                                           |
+| **Accessibility** | Semantic landmarks, skip link, labelled controls, `aria-live` status, `role="alert"` errors, focus moved to results, `aria-pressed` toggles, keyboard-only operable, visible focus, severity shown as text as well as colour, light/dark themes, `prefers-reduced-motion`.                                                                                                                            |
+| **Code quality**  | TypeScript strict + `noUncheckedIndexedAccess`, type-aware ESLint, Prettier, small single-purpose modules, shared types between server and client.                                                                                                                                                                                                                                                    |
 
 ## Run locally
 
@@ -79,7 +81,7 @@ npm run check                   # typecheck + lint + tests with coverage
 ## Deploy to Cloud Run
 
 ```bash
-gcloud run deploy sentineldesk \
+gcloud run deploy sanjaya \
   --source . --region asia-south1 --allow-unauthenticated \
   --set-env-vars GEMINI_API_KEY=YOUR_KEY \
   --memory 512Mi --max-instances 3

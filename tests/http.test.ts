@@ -8,7 +8,7 @@ import { AnalysisService } from '../src/server/service.js';
 import { callResponse, engine, FakeModel, sample, testConfig, validSubmission } from './helpers.js';
 
 const publicDir = mkdtempSync(path.join(tmpdir(), 'sd-public-'));
-writeFileSync(path.join(publicDir, 'index.html'), '<!doctype html><title>SentinelDesk</title>');
+writeFileSync(path.join(publicDir, 'index.html'), '<!doctype html><title>Sanjaya</title>');
 writeFileSync(path.join(publicDir, '.secret'), 'nope');
 
 function makeApp(client?: FakeModel, overrides = {}) {

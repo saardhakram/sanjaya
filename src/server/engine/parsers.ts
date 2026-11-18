@@ -1,7 +1,7 @@
 import type { EventKind, LogEvent, LogSource } from '../../shared/types.js';
 
 /**
- * Deterministic parsers for the log formats SentinelDesk understands:
+ * Deterministic parsers for the log formats Sanjaya understands:
  *  - Linux auth logs (sshd, sudo, useradd/usermod) in syslog or ISO-8601 form
  *  - Web server access logs (Apache/Nginx combined format)
  *  - Firewall logs (UFW / iptables kernel lines)
