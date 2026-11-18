@@ -30,8 +30,8 @@ jobs:
     needs: check
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t sentineldesk .
-      - run: docker run -d -p 8080:8080 --name sd sentineldesk
+      - run: docker build -t sanjaya .
+      - run: docker run -d -p 8080:8080 --name sd sanjaya
       - run: |
           for i in $(seq 1 20); do curl -fs http://localhost:8080/healthz && break; sleep 1; done
       - run: node scripts/smoke.mjs http://localhost:8080

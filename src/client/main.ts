@@ -90,12 +90,12 @@ const handlers: Handlers = {
   },
   onExportRunbook() {
     if (!current) return;
-    download('sentineldesk-runbook.md', buildRunbook(current.result, audit), 'text/markdown');
+    download('sanjaya-runbook.md', buildRunbook(current.result, audit), 'text/markdown');
   },
   onExportJson() {
     if (!current) return;
     download(
-      'sentineldesk-report.json',
+      'sanjaya-report.json',
       JSON.stringify({ ...current.result, audit }, null, 2),
       'application/json',
     );

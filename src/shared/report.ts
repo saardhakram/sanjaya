@@ -64,7 +64,7 @@ export function buildRunbook(result: AnalysisResult, audit: readonly AuditEntry[
   const decisions = currentDecisions(audit);
   const approved = result.actions.filter((a) => decisions.get(a.id) === 'approved');
   const lines: string[] = [
-    '# SentinelDesk incident response runbook',
+    '# Sanjaya incident response runbook',
     '',
     `Generated: ${new Date().toISOString()}  `,
     `Analysis engine: ${result.meta.engine === 'gemini' ? `Gemini (${result.meta.model ?? 'model'})` : 'rule-based'}  `,
@@ -119,7 +119,7 @@ export function buildRunbook(result: AnalysisResult, audit: readonly AuditEntry[
     const label = act ? `${act.id} ${act.title}`.replace(/\|/g, '/') : e.actionId;
     lines.push(`| ${e.at} | ${label} | ${e.decision} | ${e.analyst.replace(/\|/g, '/')} |`);
   }
-  lines.push('', '> SentinelDesk never executes commands. Review each step before running it.');
+  lines.push('', '> Sanjaya never executes commands. Review each step before running it.');
   return lines.join('\n') + '\n';
 }
 

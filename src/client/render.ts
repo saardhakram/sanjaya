@@ -272,7 +272,7 @@ function runbookCard(handlers: Handlers, analyst: string): HTMLElement {
     h(
       'p',
       { class: 'muted small' },
-      'SentinelDesk never runs commands. Approved steps go into a runbook you can review and run, and every decision is logged.',
+      'Sanjaya never runs commands. Approved steps go into a runbook you can review and run, and every decision is logged.',
     ),
     h(
       'div',

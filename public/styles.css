@@ -1,4 +1,4 @@
-/* SentinelDesk — accessible SOC console. Dark by default, light via prefers-color-scheme. */
+/* Sanjaya — accessible SOC console. Dark by default, light via prefers-color-scheme. */
 :root {
   --bg: #0a0f1a;
   --bg-grid: rgba(148, 163, 184, 0.05);

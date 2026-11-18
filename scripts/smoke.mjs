@@ -32,7 +32,10 @@ await check('GET /healthz', async () => {
 await check('GET / serves the app with a strict CSP', async () => {
   const r = await fetch(base);
   assert(r.ok, `status ${r.status}`);
-  assert((r.headers.get('content-security-policy') ?? '').includes("script-src 'self'"), 'CSP missing');
+  assert(
+    (r.headers.get('content-security-policy') ?? '').includes("script-src 'self'"),
+    'CSP missing',
+  );
 });
 await check('GET /api/status', async () => {
   const r = await fetch(`${base}/api/status`);

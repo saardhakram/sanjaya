@@ -1,7 +1,7 @@
 {
-  "name": "sentineldesk",
+  "name": "sanjaya",
   "version": "1.0.0",
-  "description": "SentinelDesk: an agentic AI cybersecurity triage desk. Deterministic detectors + a Gemini analyst agent, with human-approved remediation.",
+  "description": "Sanjaya: an agentic AI cybersecurity triage desk. Deterministic detectors + a Gemini analyst agent, with human-approved remediation.",
   "main": "dist/server/index.js",
   "scripts": {
     "dev": "npm run build:client && tsx watch src/server/index.ts",

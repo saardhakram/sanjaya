@@ -117,7 +117,7 @@ export interface ProposedAction {
   title: string;
   target?: string;
   rationale: string;
-  /** Suggested command, generated from a fixed template with a validated target. Never executed by SentinelDesk. */
+  /** Suggested command, generated from a fixed template with a validated target. Never executed by Sanjaya. */
   command: string;
   risk: ActionRisk;
   reversible: boolean;
