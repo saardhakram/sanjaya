@@ -89,7 +89,15 @@ export function createApp({ config, service, publicDir = DEFAULT_PUBLIC_DIR }: A
     express.static(publicDir, {
       index: 'index.html',
       dotfiles: 'deny',
-      maxAge: '1h',
+      // Pages and scripts are revalidated on every load; fonts never change.
+      setHeaders: (res, filePath) => {
+        res.setHeader(
+          'Cache-Control',
+          filePath.includes(`${path.sep}fonts${path.sep}`)
+            ? 'public, max-age=31536000, immutable'
+            : 'public, max-age=0, must-revalidate',
+        );
+      },
     }),
   );
 
