@@ -1,0 +1,47 @@
+{
+  "name": "sentineldesk",
+  "version": "1.0.0",
+  "description": "SentinelDesk: an agentic AI cybersecurity triage desk. Deterministic detectors + a Gemini analyst agent, with human-approved remediation.",
+  "main": "dist/server/index.js",
+  "scripts": {
+    "dev": "npm run build:client && tsx watch src/server/index.ts",
+    "build:client": "node scripts/build-client.mjs",
+    "build:server": "tsc -p tsconfig.build.json",
+    "build": "npm run build:client && npm run build:server",
+    "start": "node dist/server/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "check": "npm run typecheck && npm run lint && npm run test:coverage"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@google/genai": "^3.6.0",
+    "express": "^5.3.0",
+    "helmet": "^8.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.6",
+    "@types/supertest": "^7.2.1",
+    "@vitest/coverage-v8": "^5.1.1",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.15.0",
+    "prettier": "^3.10.1",
+    "supertest": "^7.3.2",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.73.0",
+    "vitest": "^5.1.1"
+  },
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  }
+}

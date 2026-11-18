@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="SentinelDesk: AI cybersecurity triage. Deterministic detections, a Gemini analyst agent, and remediation that a human approves."
+    />
+    <meta name="color-scheme" content="dark light" />
+    <title>SentinelDesk · AI security triage</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="topbar">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <path d="M16 2 4 7v8c0 7.2 5 13.3 12 15 7-1.7 12-7.8 12-15V7L16 2Z" />
+          <path
+            class="brand-eye"
+            d="M9 16c2-3.3 4.4-5 7-5s5 1.7 7 5c-2 3.3-4.4 5-7 5s-5-1.7-7-5Z"
+          />
+          <circle cx="16" cy="16" r="2.4" />
+        </svg>
+        <div>
+          <p class="brand-name">SentinelDesk</p>
+          <p class="brand-tag">
+            AI incident triage. Verifiable detections, human-approved response.
+          </p>
+        </div>
+      </div>
+      <p id="ai-status" class="pill" role="status">Checking AI analyst…</p>
+    </header>
+
+    <main id="main" class="layout">
+      <section class="panel intake" aria-labelledby="intake-title">
+        <h1 id="intake-title" class="panel-title">Triage logs</h1>
+        <p class="hint">
+          Paste Linux auth, web access (Apache/Nginx) or firewall (UFW/iptables) logs, or load a
+          demo scenario.
+        </p>
+
+        <fieldset class="samples">
+          <legend>Demo scenarios</legend>
+          <div id="sample-list" class="sample-list"></div>
+        </fieldset>
+
+        <form id="analyze-form" novalidate>
+          <div class="field">
+            <div class="field-row">
+              <label for="logs">Log lines</label>
+              <span id="log-count" class="muted" aria-live="polite">0 lines</span>
+            </div>
+            <textarea
+              id="logs"
+              name="logs"
+              rows="14"
+              spellcheck="false"
+              autocomplete="off"
+              aria-describedby="logs-help"
+              placeholder="Nov 18 02:05:00 web-01 sshd[4100]: Failed password for root from 203.0.113.45 port 51000 ssh2"
+            ></textarea>
+            <p id="logs-help" class="muted small">
+              Up to 256 KB / 5,000 lines. Log text is analysed in memory and never stored.
+            </p>
+          </div>
+
+          <div class="field file-field">
+            <label for="file">Or upload a .log / .txt file</label>
+            <input id="file" type="file" accept=".log,.txt,text/plain" />
+          </div>
+
+          <div class="field check">
+            <input id="use-ai" type="checkbox" checked />
+            <label for="use-ai">Investigate with the Gemini analyst agent</label>
+          </div>
+
+          <button id="analyze-btn" class="btn btn-primary" type="submit">Analyze logs</button>
+          <p id="form-error" class="error" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section class="results" aria-labelledby="results-title">
+        <h2 id="results-title" class="sr-only">Results</h2>
+        <div id="status" class="sr-only" aria-live="polite"></div>
+        <div id="results">
+          <div class="empty">
+            <h2 class="empty-title">How SentinelDesk works</h2>
+            <ol class="steps">
+              <li>
+                <span class="step-num" aria-hidden="true">1</span>
+                <div>
+                  <strong>Detect.</strong> Tested rules parse every line and flag brute force, port
+                  scans, web exploits, privilege escalation and backdoor accounts. All scores come
+                  from code, never from the model.
+                </div>
+              </li>
+              <li>
+                <span class="step-num" aria-hidden="true">2</span>
+                <div>
+                  <strong>Investigate.</strong> A Gemini agent reads the evidence through tools,
+                  correlates the kill chain, maps it to MITRE ATT&amp;CK and explains it in plain
+                  English. Planted instructions in the logs are flagged, never followed.
+                </div>
+              </li>
+              <li>
+                <span class="step-num" aria-hidden="true">3</span>
+                <div>
+                  <strong>Approve.</strong> Fixes come only from a fixed playbook with safe command
+                  templates. Nothing runs automatically: you approve or reject each step, and every
+                  decision goes into an exportable runbook and audit trail.
+                </div>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Defensive use only. Demo data uses documentation IP ranges (RFC 5737). Built with Gemini on
+        Google Cloud Run.
+      </p>
+    </footer>
+  </body>
+</html>
