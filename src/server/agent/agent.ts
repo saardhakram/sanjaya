@@ -84,11 +84,12 @@ export async function runAgent(
   ];
   let modelIndex = 0;
   let toolCalls = 0;
+  const failures: string[] = [];
 
   const call = async (): Promise<ModelResponse> => {
     for (;;) {
       const model = opts.models[modelIndex];
-      if (!model) throw new AgentError('All models failed', tokens);
+      if (!model) throw new AgentError(`All models failed: ${failures.join(' | ')}`, tokens);
       const remaining = opts.totalTimeoutMs - (Date.now() - started);
       if (remaining <= 0) throw new AgentError('Time budget exhausted', tokens);
       const signal = AbortSignal.timeout(Math.min(opts.callTimeoutMs, remaining));
@@ -100,7 +101,10 @@ export async function runAgent(
           tools: TOOL_DECLARATIONS,
           signal,
         });
-      } catch {
+      } catch (err) {
+        // Keep a short, key-free reason for the server log.
+        const reason = err instanceof Error ? err.message : String(err);
+        failures.push(`${model}: ${reason.replace(/key=[^&\s]+/gi, 'key=***').slice(0, 200)}`);
         modelIndex++;
       }
     }
