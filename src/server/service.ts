@@ -70,6 +70,12 @@ export class AnalysisService {
           ...this.config.agent,
         });
         tokens = agent.tokens;
+        if (agent.modelFailures.length > 0) {
+          log('warn', 'model_fallback_used', {
+            requestId: input.requestId,
+            failures: agent.modelFailures,
+          });
+        }
       } catch (err) {
         fallbackReason = 'The AI analyst was unavailable, so rule-based triage was used.';
         if (err instanceof AgentError) tokens = err.tokens;

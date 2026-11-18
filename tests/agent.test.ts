@@ -94,6 +94,7 @@ describe('runAgent', () => {
     ]);
     const result = await runAgent(model, state, opts);
     expect(result.model).toBe('fallback');
+    expect(result.modelFailures).toEqual(['primary: 503']);
     expect(model.requests.map((r) => r.model)).toEqual(['primary', 'fallback']);
   });
 

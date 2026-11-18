@@ -26,6 +26,8 @@ export interface AgentResult {
   turns: number;
   toolCalls: number;
   tokens: { input: number; output: number };
+  /** Short, key-free reasons for models that failed before one succeeded. */
+  modelFailures: string[];
 }
 
 export class AgentError extends Error {
@@ -137,6 +139,7 @@ export async function runAgent(
         turns: turn,
         toolCalls,
         tokens,
+        modelFailures: failures,
       };
     }
 
