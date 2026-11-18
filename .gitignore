@@ -7,3 +7,4 @@ coverage/
 *.log
 !samples/*.log
 .DS_Store
+public/app.js

@@ -1,13 +1,8 @@
-import { GeminiClient } from './agent/model.js';
-import { createApp } from './app.js';
-import { loadConfig } from './config.js';
+import { buildApp } from './bootstrap.js';
 import { log } from './logger.js';
-import { AnalysisService } from './service.js';
 
-const config = loadConfig();
-const client = config.geminiApiKey ? new GeminiClient(config.geminiApiKey) : undefined;
-const service = new AnalysisService(config, client);
-const app = createApp({ config, service });
+// Container entrypoint (Cloud Run / Docker / local): listens on $PORT.
+const { app, service, config } = buildApp();
 
 const server = app.listen(config.port, () => {
   log('info', 'server_started', { port: config.port, aiAvailable: service.aiAvailable });

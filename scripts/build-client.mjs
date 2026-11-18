@@ -1,8 +1,8 @@
 // Bundles the browser client (TypeScript) into a single minified ES module.
+// The bundle is written to public/ (served by Vercel's CDN) and the static
+// assets are copied to dist/public (served by Express in the container).
 import { build } from 'esbuild';
 import { copyFile, mkdir } from 'node:fs/promises';
-
-await mkdir('dist/public', { recursive: true });
 
 await build({
   entryPoints: ['src/client/main.ts'],
@@ -10,11 +10,12 @@ await build({
   minify: true,
   format: 'esm',
   target: 'es2022',
-  outfile: 'dist/public/app.js',
+  outfile: 'public/app.js',
   legalComments: 'none',
   logLevel: 'info',
 });
 
-for (const file of ['index.html', 'styles.css', 'favicon.svg']) {
+await mkdir('dist/public', { recursive: true });
+for (const file of ['index.html', 'styles.css', 'favicon.svg', 'app.js']) {
   await copyFile(`public/${file}`, `dist/public/${file}`);
 }
