@@ -8,3 +8,4 @@ coverage/
 !samples/*.log
 .DS_Store
 public/app.js
+public/fonts/

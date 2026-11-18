@@ -5,46 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Sanjaya: AI cybersecurity triage. Deterministic detections, a Gemini analyst agent, and remediation that a human approves."
+      content="Sanjaya: divine sight for your security logs. Tested detections, a Gemini analyst agent, and fixes that a human approves."
     />
     <meta name="color-scheme" content="dark light" />
-    <title>Sanjaya · Divya drishti for your security logs</title>
+    <title>Sanjaya · Divine sight for your security logs</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/fonts/tiro-latin-400.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="stylesheet" href="/styles.css" />
     <script type="module" src="/app.js"></script>
   </head>
   <body>
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="chakra" viewBox="0 0 100 100">
+          <path
+            class="c-teeth"
+            d="M94.00 50.00 L98.58 56.40 L92.50 61.39 L92.50 61.39 L95.27 68.75 L88.11 72.00 L88.11 72.00 L88.87 79.83 L81.11 81.11 L81.11 81.11 L79.83 88.87 L72.00 88.11 L72.00 88.11 L68.75 95.27 L61.39 92.50 L61.39 92.50 L56.40 98.58 L50.00 94.00 L50.00 94.00 L43.60 98.58 L38.61 92.50 L38.61 92.50 L31.25 95.27 L28.00 88.11 L28.00 88.11 L20.17 88.87 L18.89 81.11 L18.89 81.11 L11.13 79.83 L11.89 72.00 L11.89 72.00 L4.73 68.75 L7.50 61.39 L7.50 61.39 L1.42 56.40 L6.00 50.00 L6.00 50.00 L1.42 43.60 L7.50 38.61 L7.50 38.61 L4.73 31.25 L11.89 28.00 L11.89 28.00 L11.13 20.17 L18.89 18.89 L18.89 18.89 L20.17 11.13 L28.00 11.89 L28.00 11.89 L31.25 4.73 L38.61 7.50 L38.61 7.50 L43.60 1.42 L50.00 6.00 L50.00 6.00 L56.40 1.42 L61.39 7.50 L61.39 7.50 L68.75 4.73 L72.00 11.89 L72.00 11.89 L79.83 11.13 L81.11 18.89 L81.11 18.89 L88.87 20.17 L88.11 28.00 L88.11 28.00 L95.27 31.25 L92.50 38.61 L92.50 38.61 L98.58 43.60 L94.00 50.00 Z"
+          />
+          <circle class="c-disc" cx="50" cy="50" r="44.2" />
+          <circle class="c-ring" cx="50" cy="50" r="40" />
+          <path
+            class="c-spokes"
+            d="M66.00 50.00L90.00 50.00M63.86 58.00L84.64 70.00M58.00 63.86L70.00 84.64M50.00 66.00L50.00 90.00M42.00 63.86L30.00 84.64M36.14 58.00L15.36 70.00M34.00 50.00L10.00 50.00M36.14 42.00L15.36 30.00M42.00 36.14L30.00 15.36M50.00 34.00L50.00 10.00M58.00 36.14L70.00 15.36M63.86 42.00L84.64 30.00"
+          />
+          <circle class="c-hub" cx="50" cy="50" r="16" />
+          <path
+            class="c-eye"
+            d="M36 50c4-6.5 8.7-9.5 14-9.5S60 43.5 64 50c-4 6.5-8.7 9.5-14 9.5S40 56.5 36 50Z"
+          />
+          <circle class="c-iris" cx="50" cy="50" r="4.6" />
+        </symbol>
+      </defs>
+    </svg>
     <a class="skip-link" href="#main">Skip to main content</a>
+
     <header class="topbar">
       <div class="brand">
-        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-          <path d="M16 2 4 7v8c0 7.2 5 13.3 12 15 7-1.7 12-7.8 12-15V7L16 2Z" />
-          <path
-            class="brand-eye"
-            d="M9 16c2-3.3 4.4-5 7-5s5 1.7 7 5c-2 3.3-4.4 5-7 5s-5-1.7-7-5Z"
-          />
-          <circle cx="16" cy="16" r="2.4" />
+        <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+          <use href="#chakra" />
         </svg>
         <div>
-          <p class="brand-name">Sanjaya</p>
-          <p class="brand-tag">
-            Divya drishti for your security logs. Verifiable detections, human-approved response.
-          </p>
+          <p class="brand-name">Sanjaya <span class="brand-deva" lang="sa">सञ्जय</span></p>
+          <p class="brand-tag">Divine sight for your security logs</p>
         </div>
       </div>
-      <p id="ai-status" class="pill" role="status">Checking AI analyst…</p>
+      <p id="ai-status" class="pill" role="status">Checking the AI analyst…</p>
     </header>
 
     <main id="main" class="layout">
       <section class="panel intake" aria-labelledby="intake-title">
-        <h1 id="intake-title" class="panel-title">Triage logs</h1>
+        <h1 id="intake-title" class="panel-title">Show Sanjaya the battlefield</h1>
         <p class="hint">
-          Paste Linux auth, web access (Apache/Nginx) or firewall (UFW/iptables) logs, or load a
-          demo scenario.
+          Paste Linux auth, web server (Apache or Nginx) or firewall (UFW or iptables) logs, or open
+          one of the demo battles.
         </p>
 
         <fieldset class="samples">
-          <legend>Demo scenarios</legend>
+          <legend>Demo battles</legend>
           <div id="sample-list" class="sample-list"></div>
         </fieldset>
 
@@ -57,25 +80,25 @@
             <textarea
               id="logs"
               name="logs"
-              rows="14"
+              rows="13"
               spellcheck="false"
               autocomplete="off"
               aria-describedby="logs-help"
               placeholder="Nov 18 02:05:00 web-01 sshd[4100]: Failed password for root from 203.0.113.45 port 51000 ssh2"
             ></textarea>
             <p id="logs-help" class="muted small">
-              Up to 256 KB / 5,000 lines. Log text is analysed in memory and never stored.
+              Up to 256 KB or 5,000 lines. Logs are analysed in memory and never stored.
             </p>
           </div>
 
           <div class="field file-field">
-            <label for="file">Or upload a .log / .txt file</label>
+            <label for="file">Or upload a .log or .txt file</label>
             <input id="file" type="file" accept=".log,.txt,text/plain" />
           </div>
 
           <div class="field check">
             <input id="use-ai" type="checkbox" checked />
-            <label for="use-ai">Investigate with the Gemini analyst agent</label>
+            <label for="use-ai">Let the Gemini analyst investigate</label>
           </div>
 
           <button id="analyze-btn" class="btn btn-primary" type="submit">Analyze logs</button>
@@ -87,32 +110,45 @@
         <h2 id="results-title" class="sr-only">Results</h2>
         <div id="status" class="sr-only" aria-live="polite"></div>
         <div id="results">
-          <div class="empty">
-            <h2 class="empty-title">How Sanjaya works</h2>
-            <ol class="steps">
+          <div class="hero">
+            <svg class="hero-chakra" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+              <use href="#chakra" />
+            </svg>
+            <div class="hero-text">
+              <p class="shloka" lang="sa">दिव्यं ददामि ते चक्षुः</p>
+              <p class="shloka-meaning">
+                “I give you divine eyes.” <cite>Bhagavad Gita 11.8</cite>
+              </p>
+              <p class="hero-lede">
+                Vyasa gave Sanjaya divine sight, so he could see the whole of Kurukshetra and tell a
+                king who could not see exactly what was happening. Sanjaya does the same for your
+                logs: it sees every line, rebuilds the attack, and tells you the truth about it.
+              </p>
+            </div>
+            <ol class="paths">
               <li>
-                <span class="step-num" aria-hidden="true">1</span>
-                <div>
-                  <strong>Detect.</strong> Tested rules parse every line and flag brute force, port
-                  scans, web exploits, privilege escalation and backdoor accounts. All scores come
-                  from code, never from the model.
-                </div>
+                <span class="path-deva" lang="sa">दृष्टि</span>
+                <span class="path-name">Drishti, to see</span>
+                <span class="path-text">
+                  Tested rules read every line and flag brute force, scans, web exploits, root
+                  shells and backdoor accounts. Scores come from code, never from the model.
+                </span>
               </li>
               <li>
-                <span class="step-num" aria-hidden="true">2</span>
-                <div>
-                  <strong>Investigate.</strong> A Gemini agent reads the evidence through tools,
-                  correlates the kill chain, maps it to MITRE ATT&amp;CK and explains it in plain
-                  English. Planted instructions in the logs are flagged, never followed.
-                </div>
+                <span class="path-deva" lang="sa">विचार</span>
+                <span class="path-name">Vichara, to reason</span>
+                <span class="path-text">
+                  A Gemini agent studies the evidence, joins the attack into one story and maps it
+                  to MITRE ATT&amp;CK. Instructions planted in the logs are flagged, never obeyed.
+                </span>
               </li>
               <li>
-                <span class="step-num" aria-hidden="true">3</span>
-                <div>
-                  <strong>Approve.</strong> Fixes come only from a fixed playbook with safe command
-                  templates. Nothing runs automatically: you approve or reject each step, and every
-                  decision goes into an exportable runbook and audit trail.
-                </div>
+                <span class="path-deva" lang="sa">अनुमति</span>
+                <span class="path-name">Anumati, to approve</span>
+                <span class="path-text">
+                  Fixes come only from a fixed playbook. Nothing runs on its own: you approve each
+                  step, and Chitragupta’s ledger records every decision.
+                </span>
               </li>
             </ol>
           </div>
@@ -122,8 +158,8 @@
 
     <footer class="footer">
       <p>
-        Defensive use only. Demo data uses documentation IP ranges (RFC 5737). Built with Gemini on
-        Google Cloud Run.
+        For defence only. Demo battles use documentation IP ranges (RFC 5737). Built with Google
+        Gemini.
       </p>
     </footer>
   </body>

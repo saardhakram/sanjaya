@@ -18,6 +18,37 @@ export interface Handlers {
 }
 
 const nf = new Intl.NumberFormat('en');
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+function capitalise(word: string): string {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+/** The shared chakra emblem (defined once in index.html). */
+export function chakra(): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS(SVG_NS, 'use');
+  use.setAttribute('href', '#chakra');
+  svg.append(use);
+  return svg;
+}
+
+/** Concentric rings: stage n of the attack is drawn n rings deep, like the Chakravyuha. */
+function rings(depth: number): SVGSVGElement {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < depth; i++) {
+    const c = document.createElementNS(SVG_NS, 'circle');
+    c.setAttribute('cx', '12');
+    c.setAttribute('cy', '12');
+    c.setAttribute('r', String(11 - i * 2.2));
+    svg.append(c);
+  }
+  return svg;
+}
 
 function tile(value: number | string, label: string, extra = ''): HTMLElement {
   return h(
@@ -30,18 +61,12 @@ function tile(value: number | string, label: string, extra = ''): HTMLElement {
 
 function metaLine(result: AnalysisResult): string {
   const m = result.meta;
-  const parts: string[] = [];
-  if (m.engine === 'gemini') {
-    parts.push(`Investigated by ${m.model ?? 'Gemini'}`);
-    parts.push(`${m.agentTurns} agent turn${m.agentTurns === 1 ? '' : 's'}`);
-    parts.push(`${m.toolCalls} tool calls`);
-    parts.push(`${nf.format(m.tokens.input + m.tokens.output)} tokens`);
-  } else {
-    parts.push('Rule-based triage');
-  }
-  if (m.cached) parts.push('served from cache (0 new tokens)');
-  parts.push(`${(m.durationMs / 1000).toFixed(1)} s`);
-  return parts.join(' · ');
+  const secs = `${(m.durationMs / 1000).toFixed(1)} s`;
+  if (m.cached) return `Served from memory in ${secs}, with no new tokens used.`;
+  if (m.engine !== 'gemini') return `Read by the rule engine in ${secs}.`;
+  const turns = `${m.agentTurns} turn${m.agentTurns === 1 ? '' : 's'}`;
+  const tokens = nf.format(m.tokens.input + m.tokens.output);
+  return `Investigated by ${m.model ?? 'Gemini'} in ${secs}: ${turns}, ${m.toolCalls} tool calls, ${tokens} tokens.`;
 }
 
 function evidenceBlock(finding: Finding, lines: readonly string[]): HTMLElement {
@@ -55,14 +80,8 @@ function evidenceBlock(finding: Finding, lines: readonly string[]): HTMLElement 
     pre.append(h('span', { class: 'ln' }, `${String(n).padStart(4, ' ')}  `), lines[n - 1] ?? '');
   });
   if (finding.count > finding.evidence.length) {
-    pre.append(
-      '\n',
-      h(
-        'span',
-        { class: 'ln' },
-        `… ${finding.count - finding.evidence.length} more matching lines`,
-      ),
-    );
+    const more = finding.count - finding.evidence.length;
+    pre.append('\n', h('span', { class: 'ln' }, `… ${more} more matching lines`));
   }
   return pre;
 }
@@ -74,7 +93,7 @@ function findingDetails(finding: Finding, lines: readonly string[]): HTMLElement
     h(
       'summary',
       {},
-      h('span', { class: `badge ${finding.severity}` }, finding.severity),
+      h('span', { class: `badge ${finding.severity}` }, capitalise(finding.severity)),
       h('span', { class: 'inc-id' }, finding.id),
       finding.title,
     ),
@@ -85,11 +104,16 @@ function findingDetails(finding: Finding, lines: readonly string[]): HTMLElement
       h(
         'p',
         { class: 'muted' },
-        `${formatTime(finding.firstSeen)} → ${formatTime(finding.lastSeen)} · ${finding.count} event(s)`,
+        `${formatTime(finding.firstSeen)} to ${formatTime(finding.lastSeen)}, ${finding.count} event(s)`,
       ),
       evidenceBlock(finding, lines),
     ),
   );
+}
+
+function riskBadgeClass(action: ProposedAction): string {
+  if (action.risk === 'high') return 'critical';
+  return action.risk === 'medium' ? 'medium' : 'low';
 }
 
 function actionItem(action: ProposedAction, handlers: Handlers): HTMLElement {
@@ -108,28 +132,33 @@ function actionItem(action: ProposedAction, handlers: Handlers): HTMLElement {
     { class: 'btn btn-sm reject', type: 'button', 'aria-pressed': 'false', 'data-role': 'reject' },
     'Reject',
   );
-  const state = h('span', { class: 'decision-state', 'data-role': 'state' }, 'Awaiting decision');
+  const state = h(
+    'span',
+    { class: 'decision-state', 'data-role': 'state' },
+    'Awaiting your decision',
+  );
   const titleId = `${action.id}-title`;
   approve.setAttribute('aria-describedby', titleId);
   reject.setAttribute('aria-describedby', titleId);
 
   let confirming = false;
+  const resetApprove = (): void => {
+    confirming = false;
+    approve.textContent = 'Approve';
+    approve.classList.remove('confirm');
+  };
   approve.addEventListener('click', () => {
     if (action.risk === 'high' && !confirming && approve.getAttribute('aria-pressed') !== 'true') {
       confirming = true;
-      approve.textContent = 'Confirm approval (high risk)';
+      approve.textContent = 'Confirm: this cannot be undone';
       approve.classList.add('confirm');
       return;
     }
-    confirming = false;
-    approve.textContent = 'Approve';
-    approve.classList.remove('confirm');
+    resetApprove();
     handlers.onDecide(action, 'approved');
   });
   reject.addEventListener('click', () => {
-    confirming = false;
-    approve.textContent = 'Approve';
-    approve.classList.remove('confirm');
+    resetApprove();
     handlers.onDecide(action, 'rejected');
   });
 
@@ -144,18 +173,12 @@ function actionItem(action: ProposedAction, handlers: Handlers): HTMLElement {
         { class: 'action-title', id: titleId },
         `${action.title}${action.target ? `: ${action.target}` : ''}`,
       ),
-      h(
-        'span',
-        {
-          class: `badge ${action.risk === 'high' ? 'critical' : action.risk === 'medium' ? 'medium' : 'low'}`,
-        },
-        `${action.risk} risk`,
-      ),
+      h('span', { class: `badge ${riskBadgeClass(action)}` }, `${capitalise(action.risk)} risk`),
     ),
     h(
       'p',
       { class: 'action-meta' },
-      `${action.id} · ${action.reversible ? 'reversible' : 'not reversible'}`,
+      `${action.id}, ${action.reversible ? 'can be undone' : 'cannot be undone'}`,
     ),
     h('p', { class: 'action-why' }, action.rationale),
     h(
@@ -164,6 +187,25 @@ function actionItem(action: ProposedAction, handlers: Handlers): HTMLElement {
       action.command,
     ),
     h('div', { class: 'decision' }, approve, reject, state),
+  );
+}
+
+function vyuha(incident: Incident): HTMLElement {
+  const labelId = `${incident.id}-vyuha`;
+  return h(
+    'div',
+    { class: 'vyuha' },
+    h(
+      'p',
+      { class: 'vyuha-label', id: labelId },
+      h('strong', {}, 'Chakravyuha'),
+      ': how deep the attacker went, stage by stage',
+    ),
+    h(
+      'ol',
+      { class: 'chain', 'aria-labelledby': labelId },
+      incident.tactics.map((t, i) => h('li', {}, rings(Math.min(5, i + 1)), t)),
+    ),
   );
 }
 
@@ -187,7 +229,7 @@ function incidentCard(
       h(
         'div',
         { class: 'incident-title' },
-        h('span', { class: `badge ${incident.severity}` }, incident.severity),
+        h('span', { class: `badge ${incident.severity}` }, capitalise(incident.severity)),
         h(
           'h3',
           { id: headingId },
@@ -198,16 +240,12 @@ function incidentCard(
       h(
         'span',
         { class: 'score' },
-        a ? `Priority ${a.priority} · ` : '',
-        `Risk ${incident.score}/100`,
+        a ? `Priority ${a.priority}, risk ` : 'Risk ',
+        h('strong', {}, String(incident.score)),
+        '/100',
       ),
     ),
-    incident.tactics.length > 0 &&
-      h(
-        'ol',
-        { class: 'chain', 'aria-label': 'Attack stages in the order observed' },
-        incident.tactics.map((t) => h('li', {}, t)),
-      ),
+    incident.tactics.length > 0 && vyuha(incident),
     h(
       'ul',
       { class: 'entities', 'aria-label': 'Involved IPs and accounts' },
@@ -219,14 +257,14 @@ function incidentCard(
       h(
         'dl',
         { class: 'facts' },
-        h('dt', {}, 'Attacker objective'),
+        h('dt', {}, 'Attacker’s aim'),
         h('dd', {}, a.attackerObjective),
         h('dt', {}, 'Confidence'),
-        h('dd', {}, a.confidence),
+        h('dd', {}, capitalise(a.confidence)),
         h('dt', {}, 'Verdict'),
-        h('dd', {}, a.likelyTruePositive ? 'Likely true positive' : 'Possibly benign; verify'),
-        h('dt', {}, 'Timeframe'),
-        h('dd', {}, `${formatTime(incident.firstSeen)} → ${formatTime(incident.lastSeen)}`),
+        h('dd', {}, a.likelyTruePositive ? 'Likely a real attack' : 'Possibly harmless; verify'),
+        h('dt', {}, 'When'),
+        h('dd', {}, `${formatTime(incident.firstSeen)} to ${formatTime(incident.lastSeen)}`),
       ),
     h('h4', { class: 'subhead' }, 'MITRE ATT&CK techniques'),
     h(
@@ -234,7 +272,7 @@ function incidentCard(
       { class: 'techniques' },
       incident.techniques.map((t) => h('li', {}, h('code', {}, t), ` ${techniqueName(t)}`)),
     ),
-    h('h4', { class: 'subhead' }, `Findings and evidence (${findings.length})`),
+    h('h4', { class: 'subhead' }, `Evidence (${findings.length} findings)`),
     findings.map((f) => findingDetails(f, lines)),
     h('h4', { class: 'subhead' }, `Proposed response (${actions.length})`),
     actions.length > 0
@@ -247,7 +285,7 @@ function incidentCard(
   );
 }
 
-function runbookCard(handlers: Handlers, analyst: string): HTMLElement {
+function ledgerCard(handlers: Handlers, analyst: string): HTMLElement {
   const nameInput = h('input', {
     id: 'analyst',
     type: 'text',
@@ -266,18 +304,17 @@ function runbookCard(handlers: Handlers, analyst: string): HTMLElement {
   exportJson.addEventListener('click', handlers.onExportJson);
   return h(
     'section',
-    { class: 'card', 'aria-labelledby': 'runbook-title' },
-    h('p', { class: 'card-label' }, 'Human oversight'),
-    h('h3', { id: 'runbook-title' }, 'Response runbook and audit trail'),
+    { class: 'card ledger', 'aria-labelledby': 'ledger-title' },
+    h('h3', { id: 'ledger-title' }, 'Chitragupta’s ledger'),
     h(
       'p',
       { class: 'muted small' },
-      'Sanjaya never runs commands. Approved steps go into a runbook you can review and run, and every decision is logged.',
+      'Like Chitragupta, who records every deed, this ledger records every approval and rejection. Sanjaya never runs a command itself: approved steps become a runbook for you to run.',
     ),
     h(
       'div',
       { class: 'runbook-controls' },
-      h('div', { class: 'field' }, h('label', { for: 'analyst' }, 'Approving analyst'), nameInput),
+      h('div', { class: 'field' }, h('label', { for: 'analyst' }, 'Your name'), nameInput),
       exportMd,
       exportJson,
     ),
@@ -286,7 +323,33 @@ function runbookCard(handlers: Handlers, analyst: string): HTMLElement {
       { id: 'approved-count', class: 'decision-state', 'aria-live': 'polite' },
       '0 actions approved',
     ),
-    h('ul', { id: 'audit', class: 'audit', 'aria-label': 'Audit trail' }),
+    h('ul', { id: 'audit', class: 'audit', 'aria-label': 'Ledger entries' }),
+  );
+}
+
+function narration(result: AnalysisResult): HTMLElement {
+  const s = result.stats;
+  const engineBadge =
+    result.meta.engine === 'gemini'
+      ? h('span', { class: 'ai-badge' }, 'Gemini analyst')
+      : h('span', { class: 'ai-badge rules' }, 'Rule engine');
+  return h(
+    'section',
+    { class: `card narration ${s.incidents === 0 ? 'clean' : ''}`, 'aria-labelledby': 'uvacha' },
+    h(
+      'p',
+      { class: 'narration-head' },
+      h('span', { class: 'uvacha', lang: 'sa', id: 'uvacha' }, 'सञ्जय उवाच'),
+      h('span', { class: 'uvacha-en' }, 'Sanjaya said'),
+      engineBadge,
+    ),
+    h('p', { class: 'summary-text' }, result.triage.executiveSummary),
+    result.meta.fallbackReason &&
+      result.incidents.length > 0 &&
+      h('p', { class: 'notes' }, result.meta.fallbackReason),
+    result.triage.analystNotes &&
+      result.meta.engine === 'gemini' &&
+      h('p', { class: 'notes' }, result.triage.analystNotes),
   );
 }
 
@@ -299,47 +362,26 @@ export function renderResults(
 ): void {
   const lines = logText.split(/\r?\n/);
   const s = result.stats;
-  const engineBadge =
-    result.meta.engine === 'gemini'
-      ? h('span', { class: 'ai-badge' }, 'Gemini analyst')
-      : h('span', { class: 'ai-badge rules' }, 'Rule-based');
-
   const report = h(
     'div',
     { class: 'report' },
     h(
       'div',
       { class: 'result-head' },
-      h('h2', { id: 'report-heading', tabindex: -1 }, 'Triage report'),
+      h('h2', { id: 'report-heading', tabindex: -1 }, 'What Sanjaya saw'),
       h('p', { class: 'meta' }, metaLine(result)),
     ),
     h(
       'ul',
       { class: 'tiles', 'aria-label': 'Summary figures' },
-      tile(nf.format(s.linesParsed), `of ${nf.format(s.linesTotal)} lines parsed`),
+      tile(nf.format(s.linesParsed), `of ${nf.format(s.linesTotal)} lines understood`),
       tile(s.findings, 'findings'),
       tile(s.incidents, 'incidents'),
-      tile(s.critical, 'critical incidents', s.critical > 0 ? 'crit' : ''),
+      tile(s.critical, 'critical', s.critical > 0 ? 'crit' : ''),
     ),
-    h(
-      'section',
-      { class: `card ${s.incidents === 0 ? 'clean' : ''}`, 'aria-labelledby': 'summary-title' },
-      h(
-        'p',
-        { class: 'card-label' },
-        h('span', { id: 'summary-title' }, 'Executive summary'),
-        engineBadge,
-      ),
-      h('p', { class: 'summary-text' }, result.triage.executiveSummary),
-      result.meta.fallbackReason &&
-        result.incidents.length > 0 &&
-        h('p', { class: 'notes' }, result.meta.fallbackReason),
-      result.triage.analystNotes &&
-        result.meta.engine === 'gemini' &&
-        h('p', { class: 'notes' }, result.triage.analystNotes),
-    ),
+    narration(result),
     orderedIncidents(result).map((inc) => incidentCard(result, inc, lines, handlers)),
-    result.actions.length > 0 && runbookCard(handlers, analyst),
+    result.actions.length > 0 && ledgerCard(handlers, analyst),
   );
   root.replaceChildren(report);
 }
@@ -365,7 +407,7 @@ export function renderDecisions(
     const state = item.querySelector<HTMLElement>('[data-role=state]');
     if (state) {
       state.textContent =
-        d === 'approved' ? 'Approved' : d === 'rejected' ? 'Rejected' : 'Awaiting decision';
+        d === 'approved' ? 'Approved' : d === 'rejected' ? 'Rejected' : 'Awaiting your decision';
       state.className = `decision-state ${d ?? ''}`;
     }
   }
@@ -377,11 +419,12 @@ export function renderDecisions(
     list.replaceChildren(
       ...[...audit].reverse().map((e) => {
         const act = result.actions.find((x) => x.id === e.actionId);
+        const what = act ? ` (${act.title}${act.target ? `: ${act.target}` : ''})` : '';
         return h(
           'li',
           {},
           h('time', { datetime: e.at }, e.at.slice(11, 19)),
-          `${e.analyst} ${e.decision} ${e.actionId}${act ? ` (${act.title}${act.target ? `: ${act.target}` : ''})` : ''}`,
+          `${e.analyst} ${e.decision} ${e.actionId}${what}`,
         );
       }),
     );

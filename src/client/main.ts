@@ -3,7 +3,7 @@ import { SAMPLES } from '../shared/samples.js';
 import type { AnalysisResult } from '../shared/types.js';
 import { analyze, fetchStatus } from './api.js';
 import { byId, download, h } from './dom.js';
-import { renderDecisions, renderResults, type Handlers } from './render.js';
+import { chakra, renderDecisions, renderResults, type Handlers } from './render.js';
 
 const MAX_BYTES = 256 * 1024;
 
@@ -18,6 +18,9 @@ const results = byId<HTMLDivElement>('results');
 const status = byId<HTMLDivElement>('status');
 const aiStatus = byId<HTMLParagraphElement>('ai-status');
 const sampleList = byId<HTMLDivElement>('sample-list');
+
+/** The introduction shown before the first analysis, restored if one fails. */
+const hero = results.firstElementChild?.cloneNode(true) ?? document.createTextNode('');
 
 let current: { result: AnalysisResult; logs: string } | null = null;
 let audit: AuditEntry[] = [];
@@ -121,19 +124,19 @@ form.addEventListener('submit', (event) => {
   inflight?.abort();
   inflight = new AbortController();
   button.disabled = true;
-  button.textContent = useAi.checked ? 'Investigating…' : 'Analyzing…';
+  button.textContent = useAi.checked ? 'Sanjaya is looking…' : 'Reading the logs…';
   results.setAttribute('aria-busy', 'true');
   results.replaceChildren(
     h(
       'div',
       { class: 'loading' },
-      h('span', { class: 'spinner', 'aria-hidden': 'true' }),
+      chakra(),
       h(
         'span',
         {},
         useAi.checked
-          ? 'Running detectors, then the Gemini analyst is investigating the incidents…'
-          : 'Running detectors…',
+          ? 'Sanjaya is surveying the battlefield: the rules read every line, then Gemini investigates…'
+          : 'The rules are reading every line…',
       ),
     ),
   );
@@ -150,7 +153,7 @@ form.addEventListener('submit', (event) => {
     })
     .catch((err: unknown) => {
       if (err instanceof DOMException && err.name === 'AbortError') return;
-      results.replaceChildren();
+      results.replaceChildren(hero);
       showError(err instanceof Error ? err.message : 'Analysis failed. Please try again.');
       status.textContent = 'Analysis failed.';
     })
@@ -165,8 +168,8 @@ fetchStatus()
   .then((s) => {
     aiStatus.classList.add(s.aiAvailable ? 'online' : 'offline');
     aiStatus.textContent = s.aiAvailable
-      ? `Gemini analyst online · ${s.model ?? ''}`
-      : 'Rule-based mode (AI not configured)';
+      ? `Gemini analyst ready (${s.model ?? 'Gemini'})`
+      : 'Rule engine only: AI not configured';
     if (!s.aiAvailable) {
       useAi.checked = false;
       useAi.disabled = true;
@@ -174,7 +177,7 @@ fetchStatus()
   })
   .catch(() => {
     aiStatus.classList.add('offline');
-    aiStatus.textContent = 'Server unreachable';
+    aiStatus.textContent = 'Cannot reach the server';
   });
 
 updateCount();
