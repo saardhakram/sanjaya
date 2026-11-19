@@ -80,6 +80,14 @@ npm run check                   # typecheck + lint + tests with coverage
 
 ## Deploy to Cloud Run
 
+One command in [Google Cloud Shell](https://shell.cloud.google.com) (creates/links the project, enables APIs, asks for the Gemini key without echoing it, deploys with max 2 instances, then smoke-tests):
+
+```bash
+git clone https://github.com/saardhakram/sanjaya && bash sanjaya/scripts/deploy-cloudrun.sh
+```
+
+Or manually:
+
 ```bash
 gcloud run deploy sanjaya \
   --source . --region asia-south1 --allow-unauthenticated \
