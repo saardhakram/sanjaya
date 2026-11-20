@@ -7,7 +7,14 @@ import {
   orderedIncidents,
   type AuditEntry,
 } from '../shared/report.js';
-import type { AnalysisResult, Finding, Incident, ProposedAction } from '../shared/types.js';
+import type {
+  AnalysisResult,
+  DrishtiEntity,
+  DrishtiReport,
+  Finding,
+  Incident,
+  ProposedAction,
+} from '../shared/types.js';
 import { h } from './dom.js';
 
 export interface Handlers {
@@ -96,6 +103,7 @@ function findingDetails(finding: Finding, lines: readonly string[]): HTMLElement
       h('span', { class: `badge ${finding.severity}` }, capitalise(finding.severity)),
       h('span', { class: 'inc-id' }, finding.id),
       finding.title,
+      finding.detector === 'ml_anomaly' && h('span', { class: 'ml-tag' }, 'Found by ML'),
     ),
     h(
       'div',
@@ -327,6 +335,78 @@ function ledgerCard(handlers: Handlers, analyst: string): HTMLElement {
   );
 }
 
+/** Shown entities before the rest are summarised. */
+const DRISHTI_ROWS = 8;
+
+function drishtiTag(e: DrishtiEntity): HTMLElement {
+  if (!e.anomalous) return h('span', { class: 'd-tag normal' }, 'Normal');
+  return e.ruleFlagged
+    ? h('span', { class: 'd-tag agree' }, 'Rules agree')
+    : h('span', { class: 'd-tag missed' }, 'Rules missed this');
+}
+
+function drishtiRow(e: DrishtiEntity): HTMLElement {
+  const state = !e.anomalous ? 'normal' : e.ruleFlagged ? 'agree' : 'missed';
+  const fill = h('span', { class: 'd-fill' });
+  // CSSOM, not a style attribute: the CSP forbids inline styles.
+  fill.style.width = `${e.score}%`;
+  return h(
+    'li',
+    { class: `d-row ${state}` },
+    h('span', { class: 'd-ip' }, e.ip),
+    h(
+      'span',
+      { class: 'd-bar', role: 'img', 'aria-label': `Anomaly score ${e.score} of 100` },
+      fill,
+    ),
+    h('span', { class: 'd-score' }, String(e.score)),
+    drishtiTag(e),
+    e.anomalous &&
+      e.reasons.length > 0 &&
+      h(
+        'ul',
+        { class: 'd-reasons' },
+        e.reasons.map((r) =>
+          h('li', {}, `${r.label}: `, h('strong', {}, r.value), `, normally ${r.typical}`),
+        ),
+      ),
+  );
+}
+
+function drishtiCard(report: DrishtiReport): HTMLElement {
+  const missed = report.entities.filter((e) => e.anomalous && !e.ruleFlagged).length;
+  const summary =
+    report.flagged === 0
+      ? `Every one of the ${report.entities.length} IPs behaves like normal traffic.`
+      : `${report.flagged} of ${report.entities.length} IPs behave unusually` +
+        (missed > 0
+          ? `, and ${missed} of them slipped past every rule.`
+          : ', and the rules caught all of them too.');
+  const shown = report.entities.slice(0, DRISHTI_ROWS);
+  const rest = report.entities.length - shown.length;
+  return h(
+    'section',
+    { class: `card drishti ${missed > 0 ? 'has-missed' : ''}`, 'aria-labelledby': 'drishti-title' },
+    h(
+      'div',
+      { class: 'drishti-head' },
+      h('span', { class: 'drishti-deva', lang: 'sa' }, 'दृष्टि'),
+      h('h3', { id: 'drishti-title' }, 'Drishti, the third eye'),
+      h('span', { class: 'ai-badge ml' }, 'Machine learning'),
+    ),
+    h(
+      'p',
+      { class: 'muted small' },
+      `An anomaly-detection model (Isolation Forest) that learned how ${nf.format(report.trainingProfiles)} normal clients behave. ` +
+        'It scores every IP on how unusual it is, so it can spot attacks no rule describes. 50 or more is flagged.',
+    ),
+    h('p', { class: 'drishti-summary' }, summary),
+    shown.length > 0 &&
+      h('ul', { class: 'd-list', 'aria-label': 'Anomaly score per IP' }, shown.map(drishtiRow)),
+    rest > 0 && h('p', { class: 'muted small' }, `${rest} more IP(s) scored lower.`),
+  );
+}
+
 function narration(result: AnalysisResult): HTMLElement {
   const s = result.stats;
   const engineBadge =
@@ -380,6 +460,7 @@ export function renderResults(
       tile(s.critical, 'critical', s.critical > 0 ? 'crit' : ''),
     ),
     narration(result),
+    result.drishti.entities.length > 0 && drishtiCard(result.drishti),
     orderedIncidents(result).map((inc) => incidentCard(result, inc, lines, handlers)),
     result.actions.length > 0 && ledgerCard(handlers, analyst),
   );

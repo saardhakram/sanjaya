@@ -1071,3 +1071,128 @@ details.finding summary {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Drishti: the ML third eye */
+.drishti {
+  border-left: 4px solid var(--peacock);
+}
+.drishti.has-missed {
+  border-left-color: var(--kumkum);
+}
+.drishti-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.3rem;
+}
+.drishti-deva {
+  font-family: var(--deva);
+  font-size: 1.5rem;
+  color: var(--peacock);
+}
+.ai-badge.ml {
+  background: var(--peacock-bg);
+}
+.drishti-summary {
+  margin: 0.4rem 0 0.8rem;
+  font-family: var(--serif);
+  font-size: 1.08rem;
+}
+.d-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.d-row {
+  display: grid;
+  grid-template-columns: minmax(7.5rem, max-content) minmax(4rem, 1fr) 2.2rem max-content;
+  align-items: center;
+  gap: 0.35rem 0.8rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--line);
+}
+.d-ip {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.d-bar {
+  position: relative;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+/* Threshold tick at 50 */
+.d-bar::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--muted);
+  opacity: 0.6;
+}
+.d-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--peacock) 55%, transparent);
+}
+.d-row.agree .d-fill {
+  background: var(--saffron);
+}
+.d-row.missed .d-fill {
+  background: var(--kumkum);
+}
+.d-score {
+  font-family: var(--serif);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.d-tag {
+  font-size: 0.75rem;
+  font-weight: 650;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--slate-bg);
+  color: var(--slate);
+}
+.d-tag.agree {
+  background: var(--saffron-bg);
+  color: var(--saffron);
+}
+.d-tag.missed {
+  background: var(--kumkum-bg);
+  color: var(--kumkum);
+}
+.d-reasons {
+  grid-column: 1 / -1;
+  margin: 0.1rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.d-reasons strong {
+  color: var(--text);
+  font-weight: 650;
+}
+.ml-tag {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 650;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--peacock-bg);
+  color: var(--peacock);
+}
+@media (max-width: 600px) {
+  .d-row {
+    grid-template-columns: 1fr 2.2rem max-content;
+  }
+  .d-bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}

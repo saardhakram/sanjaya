@@ -96,6 +96,7 @@ export class AnalysisService {
       incidents: state.incidents,
       actions: materializeActions(choices),
       triage: agent ? agent.triage : rulesTriage(state),
+      drishti: state.drishti,
       meta: {
         engine: agent ? 'gemini' : 'rules',
         ...(agent ? { model: agent.model } : {}),

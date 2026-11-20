@@ -7,6 +7,7 @@
 3. **Deterministic engine** (`engine/`):
    - `parsers.ts` turns each line into a `LogEvent` (auth / web / firewall / unknown), keeping 1-based line numbers for evidence.
    - `detectors.ts` runs 10 rules with named thresholds and sliding time windows, producing scored, MITRE-mapped `Finding`s.
+   - `ml/drishti.ts` (Drishti) builds a behaviour profile per source IP, scores it with three per-group Isolation Forests plus a tail-distance signal, and adds `ml_anomaly` findings only for anomalous IPs (≥ 3 events) that no rule flagged. Every IP's score and reasons go into `result.drishti`.
    - `correlate.ts` uses union-find over `ip:` / `user:` keys, linked by shared findings, successful logins from suspicious IPs, and accounts created through sudo. It builds `Incident`s with chronological kill-chain stages and baseline playbook actions.
 4. **Agent** (`agent/`), only when there are incidents and AI is enabled:
    - Starts with a compact overview (no raw logs).

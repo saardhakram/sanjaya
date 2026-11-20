@@ -1,5 +1,6 @@
 import type {
   AnalysisStats,
+  DrishtiReport,
   Finding,
   Incident,
   LogEvent,
@@ -10,6 +11,7 @@ import { correlate } from './correlate.js';
 import { runDetectors } from './detectors.js';
 import { parseLogs, type ParseOptions } from './parsers.js';
 import { buildAction } from './playbook.js';
+import { runDrishti } from '../ml/drishti.js';
 
 /** Result of the deterministic stage: everything that does not involve the AI. */
 export interface EngineResult {
@@ -17,16 +19,21 @@ export interface EngineResult {
   findings: Finding[];
   incidents: Incident[];
   stats: AnalysisStats;
+  drishti: DrishtiReport;
 }
 
 export function runEngine(text: string, opts: ParseOptions): EngineResult {
   const parsed = parseLogs(text, opts);
-  const findings = runDetectors(parsed.events);
+  const ruleFindings = runDetectors(parsed.events);
+  // Drishti (ML) adds findings only for anomalous IPs the rules missed.
+  const drishti = runDrishti(parsed.events, ruleFindings);
+  const findings = [...ruleFindings, ...drishti.findings];
   const incidents = correlate(findings, parsed.events);
   return {
     events: parsed.events,
     findings,
     incidents,
+    drishti: drishti.report,
     stats: {
       linesTotal: parsed.linesTotal,
       linesParsed: parsed.linesParsed,

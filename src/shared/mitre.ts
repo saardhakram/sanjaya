@@ -20,6 +20,7 @@ export const TACTIC_ORDER = [
   'Credential Access',
   'Discovery',
   'Lateral Movement',
+  'Collection',
   'Impact',
 ] as const;
 
@@ -35,6 +36,7 @@ export const TECHNIQUES: Readonly<Record<string, Technique>> = {
     tactic: 'Reconnaissance',
   },
   T1046: { id: 'T1046', name: 'Network Service Discovery', tactic: 'Discovery' },
+  T1119: { id: 'T1119', name: 'Automated Collection', tactic: 'Collection' },
   T1190: { id: 'T1190', name: 'Exploit Public-Facing Application', tactic: 'Initial Access' },
   'T1110.001': {
     id: 'T1110.001',

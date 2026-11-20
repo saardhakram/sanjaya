@@ -68,6 +68,13 @@ const BASELINE: Readonly<
   web_enumeration: [{ action: 'add_waf_rule', on: 'ip' }],
   port_scan: [{ action: 'block_ip', on: 'ip' }],
   ai_prompt_injection: [{ action: 'preserve_evidence' }, { action: 'escalate_to_human' }],
+  ml_anomaly: [
+    { action: 'escalate_to_human' },
+    { action: 'preserve_evidence' },
+    { action: 'terminate_sessions', on: 'user' },
+    { action: 'force_password_reset', on: 'user' },
+    { action: 'block_ip', on: 'ip' },
+  ],
 };
 
 const BASELINE_REASON: Readonly<Record<DetectorId, string>> = {
@@ -82,6 +89,8 @@ const BASELINE_REASON: Readonly<Record<DetectorId, string>> = {
   port_scan: 'Block reconnaissance from this source.',
   ai_prompt_injection:
     'Someone planted instructions for AI tools in the logs; a human should review.',
+  ml_anomaly:
+    'Behaviour far outside normal, flagged by the Drishti anomaly model; verify the evidence before acting.',
 };
 
 function keyFor(f: Finding): string {

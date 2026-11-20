@@ -15,7 +15,8 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "check": "npm run typecheck && npm run lint && npm run test:coverage"
+    "check": "npm run typecheck && npm run lint && npm run test:coverage",
+    "train:ml": "tsx scripts/train-drishti.ts"
   },
   "license": "MIT",
   "dependencies": {

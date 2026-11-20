@@ -52,7 +52,8 @@ export type DetectorId =
   | 'web_attack'
   | 'web_scanner'
   | 'web_enumeration'
-  | 'ai_prompt_injection';
+  | 'ai_prompt_injection'
+  | 'ml_anomaly';
 
 export interface Finding {
   id: string;
@@ -140,6 +141,42 @@ export interface TriageReport {
   analystNotes: string;
 }
 
+export type DrishtiGroup = 'auth' | 'web' | 'network';
+
+export interface DrishtiReason {
+  feature: string;
+  label: string;
+  value: string;
+  /** What 95% of normal clients stay at or below. */
+  typical: string;
+  group: DrishtiGroup;
+}
+
+/** Drishti's verdict on one source IP. */
+export interface DrishtiEntity {
+  ip: string;
+  /** 0–100; 50 is the flagging threshold. */
+  score: number;
+  anomalous: boolean;
+  /** True when a deterministic rule already flagged this IP. */
+  ruleFlagged: boolean;
+  events: number;
+  groups: DrishtiGroup[];
+  reasons: DrishtiReason[];
+}
+
+/** Output of Drishti, the unsupervised anomaly model ("the third eye"). */
+export interface DrishtiReport {
+  model: string;
+  trainingProfiles: number;
+  trees: number;
+  /** Every scored IP, most anomalous first. */
+  entities: DrishtiEntity[];
+  flagged: number;
+  /** Anomalous IPs no rule caught, each turned into an ml_anomaly finding. */
+  newFindings: number;
+}
+
 export interface AnalysisStats {
   linesTotal: number;
   linesParsed: number;
@@ -168,5 +205,6 @@ export interface AnalysisResult {
   incidents: Incident[];
   actions: ProposedAction[];
   triage: TriageReport;
+  drishti: DrishtiReport;
   meta: AnalysisMeta;
 }

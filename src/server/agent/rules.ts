@@ -12,6 +12,7 @@ const OBJECTIVES: readonly [string, string][] = [
   ['Initial Access', 'Get a foothold on the system or application.'],
   ['Credential Access', 'Obtain valid account credentials.'],
   ['Defense Evasion', 'Manipulate defenders or automated analysis tools.'],
+  ['Collection', 'Copy data in bulk, for example scraping customer records.'],
   ['Discovery', 'Map exposed services for a later attack.'],
   ['Reconnaissance', 'Find weaknesses to exploit.'],
 ];

