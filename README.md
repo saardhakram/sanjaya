@@ -5,7 +5,7 @@
 > **PromptWars × AgentX 2.0 · PS06: AI-Powered Cybersecurity Triage**
 > A defensive agent that analyses security logs, correlates alerts, detects suspicious activity and recommends safe remediation, with a human approving every step.
 
-**Live demo:** https://sanjaya-dun.vercel.app · Click a demo scenario, then **Analyze logs**.
+**Live demo:** https://sanjaya.embarko.app (hosted on Embarko) · mirror: https://sanjaya-dun.vercel.app · Click a demo scenario, then **Analyze logs**. Try **Low and slow** to watch the ML model catch what the rules miss.
 
 ---
 
