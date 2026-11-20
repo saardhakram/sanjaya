@@ -46,7 +46,9 @@ export function sameOrigin(req: Request, res: Response, next: NextFunction): voi
     } catch {
       host = undefined;
     }
-    if (host !== req.get('host')) {
+    // Hosting proxies may rewrite Host; the first X-Forwarded-Host value is the public host.
+    const forwarded = req.get('x-forwarded-host')?.split(',')[0]?.trim();
+    if (!host || (host !== req.get('host') && host !== forwarded)) {
       res.status(403).json({ error: 'Cross-origin requests are not allowed.' });
       return;
     }

@@ -165,6 +165,24 @@ describe('POST /api/analyze', () => {
       .expect(403);
   });
 
+  it('accepts same-origin requests behind a proxy that rewrites Host', async () => {
+    const app = makeApp();
+    const res = await request(app)
+      .post('/api/analyze')
+      .set('Host', 'internal:8080')
+      .set('X-Forwarded-Host', 'sanjaya.embarko.app')
+      .set('Origin', 'https://sanjaya.embarko.app')
+      .send({ logs: 'x' });
+    expect(res.status).not.toBe(403);
+    await request(app)
+      .post('/api/analyze')
+      .set('Host', 'internal:8080')
+      .set('X-Forwarded-Host', 'sanjaya.embarko.app')
+      .set('Origin', 'https://evil.example')
+      .send({ logs: 'x' })
+      .expect(403);
+  });
+
   it('rate-limits each client', async () => {
     const app = makeApp(undefined, { rateLimitPerMinute: 2 });
     await request(app).get('/api/status').expect(200);

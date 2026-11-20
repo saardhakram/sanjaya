@@ -1,10 +1,10 @@
 import { buildApp } from './bootstrap.js';
 import { log } from './logger.js';
 
-// Container entrypoint (Cloud Run / Docker / local): listens on $PORT.
+// Container entrypoint (Cloud Run / Embarko / Docker / local): listens on $PORT, all interfaces.
 const { app, service, config } = buildApp();
 
-const server = app.listen(config.port, () => {
+const server = app.listen(config.port, '0.0.0.0', () => {
   log('info', 'server_started', { port: config.port, aiAvailable: service.aiAvailable });
 });
 
